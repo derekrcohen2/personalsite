@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Derek Cohen</title>
-    <meta name="description" content="Derek Cohen — personal site">
+    <meta name="description" content="Derek Cohen — CTO at Trend Hunter">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
     <style>
         *,
         *::before,
@@ -18,13 +18,14 @@
         }
 
         :root {
-            --bg: #0e0e10;
-            --surface: #16161a;
-            --text: #e8e6e1;
-            --text-dim: #8a8a8d;
+            --bg: #0a0a0c;
+            --surface: #131318;
+            --text: #ededeb;
+            --text-dim: #7e7e84;
             --accent: #c9a86c;
-            --accent-dim: rgba(201, 168, 108, 0.12);
-            --rule: rgba(255, 255, 255, 0.06);
+            --accent-glow: rgba(201, 168, 108, 0.15);
+            --accent-glow-strong: rgba(201, 168, 108, 0.35);
+            --rule: rgba(255, 255, 255, 0.05);
         }
 
         html {
@@ -45,118 +46,320 @@
             justify-content: center;
             padding: 4rem 2rem;
             position: relative;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
-        /* subtle grain texture */
+        /* animated ambient glow */
+        .glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 0;
+            animation: glowIn 2s ease 0.5s forwards;
+        }
+
+        .glow--1 {
+            top: -15%;
+            right: -10%;
+            background: radial-gradient(circle, var(--accent-glow-strong), transparent 70%);
+        }
+
+        .glow--2 {
+            bottom: -20%;
+            left: -15%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(100, 80, 160, 0.18), transparent 70%);
+            animation-delay: 0.8s;
+        }
+
+        @keyframes glowIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* floating drift for glows */
+        .glow--1 { animation: glowIn 2s ease 0.5s forwards, drift1 20s ease-in-out 2s infinite; }
+        .glow--2 { animation: glowIn 2s ease 0.8s forwards, drift2 25s ease-in-out 2.5s infinite; }
+
+        @keyframes drift1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-30px, 20px) scale(1.05); }
+            66% { transform: translate(20px, -15px) scale(0.97); }
+        }
+
+        @keyframes drift2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(25px, -20px) scale(1.03); }
+            66% { transform: translate(-15px, 25px) scale(0.95); }
+        }
+
+        /* grain overlay */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            opacity: 0.025;
+            opacity: 0.03;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
             background-size: 256px 256px;
             pointer-events: none;
-            z-index: 0;
-        }
-
-        .container {
-            max-width: 560px;
-            width: 100%;
-            position: relative;
             z-index: 1;
         }
 
-        .avatar {
-            width: 88px;
-            height: 88px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--accent);
-            margin-bottom: 2.5rem;
-            opacity: 0;
-            animation: fadeUp 0.8s ease forwards;
+        .container {
+            max-width: 580px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
         }
 
+        /* avatar with animated ring */
+        .avatar-wrap {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            margin-bottom: 2.5rem;
+            opacity: 0;
+            animation: scaleIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+
+        .avatar-wrap::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--accent),
+                rgba(100, 80, 160, 0.6),
+                var(--accent),
+                rgba(201, 168, 108, 0.2),
+                var(--accent)
+            );
+            animation: ringRotate 8s linear infinite;
+            z-index: 0;
+        }
+
+        .avatar-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 1px;
+            border-radius: 50%;
+            background: var(--bg);
+            z-index: 1;
+        }
+
+        @keyframes ringRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            position: relative;
+            z-index: 2;
+            border: 3px solid var(--bg);
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.85);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* name with letter reveal */
         .name {
-            font-family: 'Instrument Serif', serif;
-            font-size: clamp(2.5rem, 6vw, 3.5rem);
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.8rem, 7vw, 3.8rem);
             font-weight: 400;
             line-height: 1.1;
-            letter-spacing: -0.01em;
+            letter-spacing: -0.02em;
             color: var(--text);
+        }
+
+        .name span {
+            display: inline-block;
             opacity: 0;
-            animation: fadeUp 0.8s ease 0.1s forwards;
+            animation: letterReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes letterReveal {
+            from {
+                opacity: 0;
+                transform: translateY(30px) rotateX(40deg);
+                filter: blur(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) rotateX(0deg);
+                filter: blur(0);
+            }
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 0.7s forwards;
+        }
+
+        .title-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--accent-glow); }
+            50% { opacity: 0.7; box-shadow: 0 0 12px 4px var(--accent-glow); }
         }
 
         .title {
             font-size: 1.05rem;
             font-weight: 400;
             color: var(--text-dim);
-            margin-top: 0.6rem;
-            letter-spacing: 0.02em;
-            opacity: 0;
-            animation: fadeUp 0.8s ease 0.2s forwards;
+            letter-spacing: 0.03em;
         }
 
         .rule {
-            width: 48px;
+            width: 60px;
             height: 1px;
-            background: var(--accent);
+            background: linear-gradient(90deg, var(--accent), transparent);
             margin: 2.25rem 0;
             opacity: 0;
-            animation: fadeUp 0.8s ease 0.3s forwards;
+            animation: expandRule 0.8s ease 0.9s forwards;
+        }
+
+        @keyframes expandRule {
+            from {
+                opacity: 0;
+                width: 0;
+            }
+            to {
+                opacity: 1;
+                width: 60px;
+            }
         }
 
         .about {
-            font-size: 1rem;
+            font-size: 1.05rem;
             color: var(--text-dim);
-            line-height: 1.8;
-            max-width: 480px;
+            line-height: 1.85;
+            max-width: 500px;
             opacity: 0;
-            animation: fadeUp 0.8s ease 0.4s forwards;
+            animation: fadeUp 0.8s ease 1s forwards;
+        }
+
+        .about strong {
+            color: var(--text);
+            font-weight: 400;
+        }
+
+        .interests {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 1.1s forwards;
+        }
+
+        .interests span {
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: var(--text-dim);
+            padding: 0.4rem 0.85rem;
+            border: 1px solid var(--rule);
+            border-radius: 100px;
+            background: var(--surface);
+            letter-spacing: 0.03em;
+            transition: border-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+        }
+
+        .interests span:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-2px);
         }
 
         .links {
             display: flex;
-            gap: 1.25rem;
-            margin-top: 2.25rem;
+            gap: 1rem;
+            margin-top: 2.5rem;
             opacity: 0;
-            animation: fadeUp 0.8s ease 0.5s forwards;
+            animation: fadeUp 0.8s ease 1.25s forwards;
         }
 
         .links a {
             display: inline-flex;
             align-items: center;
-            gap: 0.45rem;
+            gap: 0.5rem;
             color: var(--text);
             text-decoration: none;
             font-size: 0.875rem;
             font-weight: 400;
             letter-spacing: 0.02em;
-            padding: 0.55rem 1.1rem;
+            padding: 0.6rem 1.25rem;
             border: 1px solid var(--rule);
-            border-radius: 6px;
+            border-radius: 8px;
             background: var(--surface);
-            transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.4s ease, color 0.4s ease, transform 0.3s ease;
+        }
+
+        .links a::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent-glow), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
         }
 
         .links a:hover {
             border-color: var(--accent);
-            background: var(--accent-dim);
             color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .links a:hover::before {
+            opacity: 1;
         }
 
         .links a svg {
             width: 16px;
             height: 16px;
             flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .links a span {
+            position: relative;
+            z-index: 1;
         }
 
         @keyframes fadeUp {
             from {
                 opacity: 0;
-                transform: translateY(16px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -164,11 +367,30 @@
             }
         }
 
+        /* cursor glow that follows mouse */
+        .cursor-glow {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            transform: translate(-50%, -50%);
+        }
+
         @media (max-width: 480px) {
             body {
                 padding: 3rem 1.5rem;
                 align-items: flex-start;
-                padding-top: 6rem;
+                padding-top: 5rem;
+            }
+
+            .avatar-wrap {
+                width: 90px;
+                height: 90px;
             }
 
             .links {
@@ -179,21 +401,42 @@
             .links a {
                 justify-content: center;
             }
+
+            .cursor-glow {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <main class="container">
-        <img src="profile.jpg" alt="Derek Cohen" class="avatar">
+    <div class="glow glow--1"></div>
+    <div class="glow glow--2"></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
 
-        <h1 class="name">Derek Cohen</h1>
-        <p class="title">CTO at Trend Hunter</p>
+    <main class="container">
+        <div class="avatar-wrap">
+            <img src="profile.jpg" alt="Derek Cohen" class="avatar">
+        </div>
+
+        <h1 class="name" id="name"></h1>
+
+        <div class="title-row">
+            <div class="title-dot"></div>
+            <p class="title">CTO at Trend Hunter</p>
+        </div>
 
         <div class="rule"></div>
 
         <p class="about">
-            CTO at Trend Hunter, where I focus on building automation and AI software. When I'm not coding, you'll find me watching the NBA or MMA, gaming, or hunting down the best Taco Bell order.
+            Building <strong>automation</strong> and <strong>AI software</strong> at Trend Hunter. Focused on turning complex problems into clean, scalable solutions.
         </p>
+
+        <div class="interests">
+            <span>NBA</span>
+            <span>MMA</span>
+            <span>Video Games</span>
+            <span>Taco Bell</span>
+        </div>
 
         <div class="links">
             <a href="https://www.linkedin.com/in/derekrcohen" target="_blank" rel="noopener">
@@ -201,15 +444,57 @@
                     <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
                     <rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
                 </svg>
-                LinkedIn
+                <span>LinkedIn</span>
             </a>
             <a href="https://github.com/derekrcohen2" target="_blank" rel="noopener">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
                 </svg>
-                GitHub
+                <span>GitHub</span>
             </a>
         </div>
     </main>
+
+    <script>
+        // Letter-by-letter name reveal
+        const name = "Derek Cohen";
+        const nameEl = document.getElementById('name');
+        let delay = 0.3;
+        for (let i = 0; i < name.length; i++) {
+            const span = document.createElement('span');
+            span.textContent = name[i] === ' ' ? '\u00A0' : name[i];
+            span.style.animationDelay = delay + 's';
+            nameEl.appendChild(span);
+            delay += 0.04;
+        }
+
+        // Cursor glow follow
+        const glow = document.getElementById('cursorGlow');
+        let mouseX = 0, mouseY = 0, glowX = 0, glowY = 0;
+        let glowVisible = false;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            if (!glowVisible) {
+                glowVisible = true;
+                glow.style.opacity = '1';
+            }
+        });
+
+        document.addEventListener('mouseleave', () => {
+            glowVisible = false;
+            glow.style.opacity = '0';
+        });
+
+        function animateGlow() {
+            glowX += (mouseX - glowX) * 0.08;
+            glowY += (mouseY - glowY) * 0.08;
+            glow.style.left = glowX + 'px';
+            glow.style.top = glowY + 'px';
+            requestAnimationFrame(animateGlow);
+        }
+        animateGlow();
+    </script>
 </body>
 </html>
